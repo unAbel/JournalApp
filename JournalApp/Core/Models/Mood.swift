@@ -7,7 +7,15 @@
 
 import Foundation
 
-enum Mood: Int, CaseIterable, Codable {
+//enum Mood: Int, CaseIterable, Codable {
+//    case veryBad = 0
+//    case bad
+//    case neutral
+//    case good
+//    case veryGood
+//}
+
+enum Mood: Int, CaseIterable, Codable, Hashable {
     case veryBad = 0
     case bad
     case neutral

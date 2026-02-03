@@ -6,85 +6,134 @@
 //
 
 import SwiftUI
+import PhotosUI
 
 struct CreateEntryView: View {
-    
-    @Environment(AppContainer.self) private var container
+    //@Environment(AppContainer.self) private var container
     @Environment(\.dismiss) private var dismiss
+    @State private var viewModel: CreateEntryViewModel
     
-    @State private var text = ""
-    @State private var mood: Mood = .neutral
-    @State private var errorMessage: String?
+    let entry: Entry?
     
-    let entryToEdit: Entry?
-    
-    init(entry: Entry? = nil) {
-        self.entryToEdit = entry
-        _text = State(initialValue: entry?.text ?? "")
-        _mood = State(initialValue: entry?.mood ?? .neutral)
+    init(entry: Entry? = nil, container: AppContainer) {
+        self.entry = entry  
+        _viewModel = State(initialValue: CreateEntryViewModel(
+            entry: entry,
+            createUseCase: container.createEntryUseCase,
+            updateUseCase: container.updateEntryUseCase
+        ))
     }
-    
-    
+        
     var body: some View {
         NavigationStack {
-            Form {
-                Section("Text") {
-                    TextEditor(text: $text)
-                        .frame(minHeight: 120)
+            form
+                .navigationTitle(entry == nil ? "New Entry" : "Edit Entry")
+                .toolbar { toolbarContent }
+                .alert("Error", isPresented: .constant(viewModel.errorMessage != nil)) {
+                    Button("OK") { viewModel.errorMessage = nil }
+                } message: {
+                    Text(viewModel.errorMessage ?? "")
                 }
-                
-                Section("Mood") {
-                    Picker("Mood", selection: $mood) {
-                        ForEach(Mood.allCases, id: \.self) {
-                            Text(String(describing: $0))
-                                .tag($0)
-                        }
-                    }
-                }
-                
-                if let errorMessage {
-                    Text(errorMessage)
-                        .foregroundStyle(.red)
-                }
-            }
-            .navigationTitle(entryToEdit == nil ? "New Entry" : "Edit Entry")
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("Cancel") {
+        }
+    }
+    
+    @ToolbarContentBuilder
+    private var toolbarContent: some ToolbarContent {
+        ToolbarItem(placement: .cancellationAction) {
+            Button("Cancel") { dismiss() }
+        }
+        ToolbarItem(placement: .confirmationAction) {
+            Button("Save") {
+                Task {
+                    if await viewModel.save() {
                         dismiss()
                     }
                 }
+            }
+            .disabled(!viewModel.isValid || viewModel.isSaving)
+        }
+    }
+    
+    private var form: some View {
+        Form {
+            Section("Text") {
+                TextEditor(text: $viewModel.text)
+                    .frame(minHeight: 120)
                 
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Save") {
-                        Task {
-                            await save()
-                        }
+                Text("\(viewModel.text.count) / \(EntryValidator.maxLength)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            
+            Section("Mood") {
+                Picker("Mood", selection: $viewModel.mood) {
+                    ForEach(Mood.allCases, id: \.self) { mood in
+                        Text(mood.displayName).tag(mood)
                     }
+                }
+                .pickerStyle(.segmented)
+            }
+            
+            Section {
+                PhotosPicker(
+                    selection: $viewModel.selectedPhotos,
+                    maxSelectionCount: EntryValidator.maxPhotos,
+                    matching: .images
+                ) {
+                    Label("Add Photos", systemImage: "photo.on.rectangle.angled")
+                }
+                .disabled(!viewModel.canAddMorePhotos)
+                .onChange(of: viewModel.selectedPhotos) {
+                    Task { await viewModel.loadPhotos() }
+                }
+                
+                if !viewModel.photoDataArray.isEmpty {
+                    photosGrid
+                }
+            } header: {
+                HStack {
+                    Text("Photos")
+                    Spacer()
+                    Text("\(viewModel.photoDataArray.count) / \(EntryValidator.maxPhotos)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
             }
         }
     }
     
-    private func save() async {
-        do {
-            if let entryToEdit {
-                try await container.updateEntryUseCase.execute(
-                    entry: entryToEdit,
-                    newText: text,
-                    newMood: mood
-                )
-            } else {
-                try await container.createEntryUseCase.execute(
-                    text: text,
-                    mood: mood
-                )
+    private var photosGrid: some View {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 80))], spacing: 8) {
+            ForEach(Array(viewModel.photoDataArray.enumerated()), id: \.offset) { index, data in
+                if let uiImage = UIImage(data: data) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 80, height: 80)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .overlay(alignment: .topTrailing) {
+                            Button {
+                                viewModel.removePhoto(at: index)
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundStyle(.white, .red)
+                            }
+                            .offset(x: 4, y: -4)
+                        }
+                }
             }
-            
-            dismiss()
-        } catch {
-            errorMessage = error.localizedDescription
         }
     }
-    
+}
+
+extension Mood {
+    var displayName: String {
+        switch self {
+        case .veryBad: "😢"
+        case .bad: "😕"
+        case .neutral: "😐"
+        case .good: "🙂"
+        case .veryGood: "😄"
+        }
+    }
 }

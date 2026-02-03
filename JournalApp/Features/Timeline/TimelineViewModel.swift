@@ -11,37 +11,61 @@ import Observation
 @MainActor
 @Observable
 final class TimelineViewModel {
-
-    private let fetchEntries: FetchEntriesUseCase
-    private let deleteEntry: DeleteEntryUseCase
-
-    private(set) var entries: [Entry] = []
-    private(set) var isLoading = false
-
-    init(
-        fetchEntries: FetchEntriesUseCase,
-        deleteEntry: DeleteEntryUseCase
-    ) {
-        self.fetchEntries = fetchEntries
-        self.deleteEntry = deleteEntry
+    
+    private let repository: EntryRepository
+    
+    var entries: [Entry] = []
+    var isLoading = false
+    var errorMessage: String?
+    var searchText = ""
+    
+    private var searchTask: Task<Void, Never>?
+    
+    init(repository: EntryRepository) {
+        self.repository = repository
     }
-
-    func loadEntries() async {
+    
+    func load() async {
         isLoading = true
+        errorMessage = nil
         defer { isLoading = false }
-
+        
         do {
-            entries = try await fetchEntries.execute()
+            entries = try await repository.fetchAll()
         } catch {
-            entries = []
+            errorMessage = "Failed to load entries"
         }
     }
-
-    func deleteEntry(at offsets: IndexSet) async {
-        for index in offsets {
-            let entry = entries[index]
-            try? await deleteEntry.execute(entry: entry)
+    
+    func search() {
+        searchTask?.cancel()
+        
+        guard !searchText.isEmpty else {
+            Task { await load() }
+            return
         }
-        await loadEntries()
+        
+        searchTask = Task {
+            try? await Task.sleep(for: .milliseconds(300))
+            guard !Task.isCancelled else { return }
+            
+            isLoading = true
+            defer { isLoading = false }
+            
+            do {
+                entries = try await repository.search(query: searchText)
+            } catch {
+                errorMessage = "Search failed"
+            }
+        }
+    }
+    
+    func delete(_ entry: Entry) async {
+        do {
+            try await repository.delete(entry)
+            await load()
+        } catch {
+            errorMessage = "Failed to delete entry"
+        }
     }
 }

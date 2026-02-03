@@ -10,13 +10,13 @@ import Foundation
 enum EntryError: LocalizedError {
     case textTooShort
     case textTooLong
-
+    case tooManyPhotos
+    
     var errorDescription: String? {
         switch self {
-        case .textTooShort:
-            return "Entry text is too short."
-        case .textTooLong:
-            return "Entry text is too long."
+        case .textTooShort: "Entry text is too short"
+        case .textTooLong: "Entry text exceeds \(EntryValidator.maxLength) characters"
+        case .tooManyPhotos: "Maximum \(EntryValidator.maxPhotos) photos allowed"
         }
     }
 }
