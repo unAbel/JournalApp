@@ -8,6 +8,8 @@
 import Foundation
 import SwiftData
 
+// Asegúrate de que tu modelo Entry tenga una relación con un modelo Photo, y usa @Attribute(.externalStorage) en el campo del Data de la imagen. Si no haces esto, la base de datos crecerá demasiado y la app irá lenta.
+
 @Model
 final class Entry {
 

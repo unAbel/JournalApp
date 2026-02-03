@@ -11,10 +11,13 @@ struct RootView: View {
 
     var body: some View {
         TabView {
-            TimelineView()
-                .tabItem {
-                    Label("Timeline", systemImage: "list.bullet")
-                }
+
+            NavigationStack {
+                TimelineView()
+            }
+            .tabItem {
+                Label("Timeline", systemImage: "list.bullet")
+            }
         }
     }
 }
