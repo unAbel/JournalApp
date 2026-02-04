@@ -8,26 +8,6 @@
 import Foundation
 import SwiftData
 
-final class UpdateEntryUseCase2 {
-
-    private let repository: EntryRepository
-
-    init(repository: EntryRepository) {
-        self.repository = repository
-    }
-
-    func execute(entry: Entry, newText: String, newMood: Mood) async throws {
-        try EntryValidator.validate(text: newText)
-
-        entry.text = newText
-        entry.mood = newMood
-        entry.updatedAt = .now
-
-        try await repository.save(entry)
-    }
-}
-
-
 final class UpdateEntryUseCase {
     private let repository: EntryRepository
     private let context: ModelContext

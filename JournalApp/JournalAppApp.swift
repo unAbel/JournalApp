@@ -17,6 +17,7 @@ struct JournalAppApp: App {
             RootView()
                 .environment(container)
                 .modelContainer(container.modelContainer)
+                // Dependency Injection con Composition Root.
         }
     }
 }

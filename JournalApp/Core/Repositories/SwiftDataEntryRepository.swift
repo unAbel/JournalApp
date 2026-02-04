@@ -69,3 +69,13 @@ final class SwiftDataEntryRepository: EntryRepository {
         }
     }
 }
+
+extension SwiftDataEntryRepository {
+    func deleteAll() async throws {
+        let entries = try await fetchAll()
+        for entry in entries {
+            context.delete(entry)
+        }
+        try context.save()
+    }
+}

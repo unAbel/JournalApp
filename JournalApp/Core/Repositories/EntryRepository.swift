@@ -12,4 +12,5 @@ protocol EntryRepository {
     func search(query: String) async throws -> [Entry]
     func save(_ entry: Entry) async throws
     func delete(_ entry: Entry) async throws
+    func deleteAll() async throws // ← NEW
 }
