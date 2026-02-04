@@ -125,15 +125,3 @@ struct CreateEntryView: View {
         }
     }
 }
-
-extension Mood {
-    var displayName: String {
-        switch self {
-        case .veryBad: "😢"
-        case .bad: "😕"
-        case .neutral: "😐"
-        case .good: "🙂"
-        case .veryGood: "😄"
-        }
-    }
-}

@@ -10,7 +10,8 @@ import Foundation
 protocol EntryRepository {
     func fetchAll() async throws -> [Entry]
     func search(query: String) async throws -> [Entry]
-    func save(_ entry: Entry) async throws
+    //func save(_ entry: Entry) async throws
+    func save() async throws
     func delete(_ entry: Entry) async throws
     func deleteAll() async throws // ← NEW
 }

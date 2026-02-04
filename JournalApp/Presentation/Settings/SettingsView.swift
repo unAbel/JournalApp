@@ -11,6 +11,7 @@ import SwiftUI
 import SwiftUI
 
 struct SettingsView: View {
+    @Environment(AppContainer.self) private var container
 
     @State var viewModel: SettingsViewModel
     @State private var showResetConfirmation = false
@@ -79,6 +80,9 @@ struct SettingsView: View {
             }
 
             Button("Cancel", role: .cancel) {}
+        }
+        .onChange(of: viewModel.selectedTheme) { _, newValue in
+            container.selectedTheme = newValue
         }
     }
 }

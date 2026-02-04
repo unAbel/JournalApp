@@ -10,16 +10,14 @@ import SwiftData
 
 @Model
 final class Photo {
-    @Attribute(.unique)
-    var id: UUID
-    
+
     @Attribute(.externalStorage)
     var imageData: Data
-    
-    var entry: Entry?
-    
-    init(id: UUID = UUID(), imageData: Data) {
-        self.id = id
+
+    var entry: Entry
+
+    init(imageData: Data, entry: Entry) {
         self.imageData = imageData
+        self.entry = entry
     }
 }

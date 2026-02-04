@@ -25,10 +25,16 @@ struct TimelineView: View {
         }
         .navigationTitle("Journal")
         .task {
-            guard viewModel == nil else { return }
-            let vm = TimelineViewModel(repository: container.entryRepository)
-            viewModel = vm
-            await vm.load()
+            //            guard viewModel == nil else { return }
+            //            let vm = TimelineViewModel(repository: container.entryRepository)
+            //            viewModel = vm
+            //            await vm.load()
+            if viewModel == nil {
+                let vm = TimelineViewModel(repository: container.entryRepository)
+                viewModel = vm
+                await vm.load()
+            }
+            
         }
         .sheet(isPresented: $showCreateSheet) {
             CreateEntryView(container: container)

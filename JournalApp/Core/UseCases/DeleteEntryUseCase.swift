@@ -7,6 +7,7 @@
 
 import Foundation
 
+@MainActor
 final class DeleteEntryUseCase {
 
     private let repository: EntryRepository
@@ -19,3 +20,19 @@ final class DeleteEntryUseCase {
         try await repository.delete(entry)
     }
 }
+
+
+// MARK: REVISAR URGENTE
+//@MainActor
+//final class DeleteEntryUseCase {
+//
+//    private let repository: EntryRepository
+//
+//    init(repository: EntryRepository) {
+//        self.repository = repository
+//    }
+//
+//    func execute(entry: Entry) throws {
+//        try repository.delete(entry)
+//    }
+//}

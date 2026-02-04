@@ -7,6 +7,7 @@
 
 import Foundation
 
+@MainActor
 final class ResetAllDataUseCase {
     private let repository: EntryRepository
     private let storage: SettingsStorageProtocol

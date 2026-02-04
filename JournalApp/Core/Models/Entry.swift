@@ -52,13 +52,20 @@ final class Entry {
     var text: String
     var mood: Mood
     var createdAt: Date
+    var updatedAt: Date
 
     @Relationship(deleteRule: .cascade)
     var photos: [Photo] = []
 
-    init(text: String, mood: Mood, createdAt: Date = .now) {
+    init(
+        text: String,
+        mood: Mood,
+        createdAt: Date = .now,
+        updatedAt: Date = .now
+    ) {
         self.text = text
         self.mood = mood
         self.createdAt = createdAt
+        self.updatedAt = updatedAt
     }
 }

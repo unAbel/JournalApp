@@ -22,3 +22,15 @@ enum Mood: Int, CaseIterable, Codable, Hashable {
     case good
     case veryGood
 }
+
+extension Mood {
+    var displayName: String {
+        switch self {
+        case .veryBad: "😢"
+        case .bad: "😕"
+        case .neutral: "😐"
+        case .good: "🙂"
+        case .veryGood: "😄"
+        }
+    }
+}

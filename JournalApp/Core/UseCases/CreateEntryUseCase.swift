@@ -8,26 +8,36 @@
 import Foundation
 import SwiftData
 
+@MainActor
 final class CreateEntryUseCase {
+
     private let repository: EntryRepository
     private let context: ModelContext
-    
+
     init(repository: EntryRepository, context: ModelContext) {
         self.repository = repository
         self.context = context
     }
-    
-    func execute(text: String, mood: Mood, photoDataArray: [Data]) async throws {
-        try EntryValidator.validate(text: text, photoCount: photoDataArray.count)
-        
+
+    func execute(
+        text: String,
+        mood: Mood,
+        photoDataArray: [Data]
+    ) async throws {
+
+        try EntryValidator.validate(
+            text: text,
+            photoCount: photoDataArray.count
+        )
+
         let entry = Entry(text: text, mood: mood)
-        
+
         for data in photoDataArray {
-            let photo = Photo(imageData: data)
+            let photo = Photo(imageData: data, entry: entry)
             entry.photos.append(photo)
-            context.insert(photo)
         }
-        
-        try await repository.save(entry)
+
+        context.insert(entry)         
+        try await repository.save()
     }
 }

@@ -9,6 +9,7 @@ import Foundation
 import SwiftData
 import OSLog
 
+@MainActor
 final class SwiftDataEntryRepository: EntryRepository {
     
     private let context: ModelContext
@@ -49,12 +50,12 @@ final class SwiftDataEntryRepository: EntryRepository {
     }
     
     
-    func save(_ entry: Entry) async throws {
+    //func save(_ entry: Entry) async throws {
+    func save() async throws {
         do {
-            context.insert(entry)
             try context.save()
         } catch {
-            logger.error("Save failed: \(error.localizedDescription)")
+            logger.error("Save failed: \(error, privacy: .public)")
             throw error
         }
     }
@@ -71,11 +72,35 @@ final class SwiftDataEntryRepository: EntryRepository {
 }
 
 extension SwiftDataEntryRepository {
-    func deleteAll() async throws {
+    func deleteAll2() async throws {
         let entries = try await fetchAll()
         for entry in entries {
             context.delete(entry)
         }
         try context.save()
     }
+    
+    // Para miles / decenas de miles → SwiftData no es la herramienta
+    func deleteAll() throws {
+        do {
+            let descriptor = FetchDescriptor<Entry>()
+            let entries = try context.fetch(descriptor)
+            
+            for entry in entries {
+                context.delete(entry)
+            }
+            
+            try context.save()
+        } catch {
+            logger.error("DeleteAll failed: \(error, privacy: .public)")
+            throw error
+        }
+    }
 }
+
+
+
+
+
+
+

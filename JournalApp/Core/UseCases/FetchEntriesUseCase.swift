@@ -7,6 +7,7 @@
 
 import Foundation
 
+@MainActor
 final class FetchEntriesUseCase {
 
     private let repository: EntryRepository
